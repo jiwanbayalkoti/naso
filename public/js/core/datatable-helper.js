@@ -34,7 +34,8 @@
                 serverSide: true,
                 responsive: true,
                 autoWidth: false,
-                scrollX: isMobile,
+                // scrollX + responsive + .table-responsive often widens the whole page on mobile
+                scrollX: false,
                 pageLength: isMobile ? 10 : 25,
                 lengthMenu: [
                     [10, 25, 50, 100, -1],

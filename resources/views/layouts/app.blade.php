@@ -16,7 +16,7 @@
     <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
-    <link href="{{ asset('css/app-custom.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/app-custom.css') }}?v={{ @filemtime(public_path('css/app-custom.css')) ?: time() }}" rel="stylesheet">
 
     @stack('styles')
 </head>
@@ -204,12 +204,12 @@
     <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.colVis.min.js" defer></script>
     @stack('charts')
 
-    <script src="{{ asset('js/core/notification-helper.js') }}"></script>
-    <script src="{{ asset('js/core/ajax-helper.js') }}"></script>
-    <script src="{{ asset('js/core/datatable-helper.js') }}"></script>
-    <script src="{{ asset('js/core/form-helper.js') }}"></script>
-    <script src="{{ asset('js/core/realtime-helper.js') }}"></script>
-    <script src="{{ asset('js/core/app-notifications.js') }}"></script>
+    <script src="{{ asset('js/core/notification-helper.js') }}?v={{ @filemtime(public_path('js/core/notification-helper.js')) ?: time() }}"></script>
+    <script src="{{ asset('js/core/ajax-helper.js') }}?v={{ @filemtime(public_path('js/core/ajax-helper.js')) ?: time() }}"></script>
+    <script src="{{ asset('js/core/datatable-helper.js') }}?v={{ @filemtime(public_path('js/core/datatable-helper.js')) ?: time() }}"></script>
+    <script src="{{ asset('js/core/form-helper.js') }}?v={{ @filemtime(public_path('js/core/form-helper.js')) ?: time() }}"></script>
+    <script src="{{ asset('js/core/realtime-helper.js') }}?v={{ @filemtime(public_path('js/core/realtime-helper.js')) ?: time() }}"></script>
+    <script src="{{ asset('js/core/app-notifications.js') }}?v={{ @filemtime(public_path('js/core/app-notifications.js')) ?: time() }}"></script>
     @if(auth()->user()->hasRole('rider'))
         <script src="{{ asset('js/core/rider-delivery-offers.js') }}"></script>
         <script src="{{ asset('js/core/rider-location-sender.js') }}"></script>

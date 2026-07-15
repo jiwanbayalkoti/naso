@@ -929,22 +929,51 @@ div.dataTables_wrapper .dt-buttons .btn {
 html {
     max-width: 100%;
     overflow-x: hidden;
+    overflow-x: clip;
+}
+
+body,
+.admin-body {
+    max-width: 100%;
+    overflow-x: hidden;
+    overflow-x: clip;
 }
 
 .admin-wrapper,
 .admin-main,
-.admin-content {
+.admin-content,
+.card,
+.card-body,
+.table-card {
     max-width: 100%;
     min-width: 0;
 }
 
+.admin-wrapper {
+    overflow-x: clip;
+    width: 100%;
+}
+
+.admin-main {
+    overflow-x: clip;
+}
+
 .admin-content .row {
     --bs-gutter-x: 1rem;
+    margin-left: 0;
+    margin-right: 0;
+    max-width: 100%;
+}
+
+.admin-content .row > [class*='col-'] {
+    min-width: 0;
+    max-width: 100%;
 }
 
 .table-responsive,
 .dataTables_wrapper {
     max-width: 100%;
+    width: 100%;
 }
 
 .dataTables_wrapper .dt-buttons {
@@ -985,9 +1014,10 @@ html {
     }
 
     .admin-main {
-        margin-left: 0;
+        margin-left: 0 !important;
         width: 100%;
-        max-width: 100vw;
+        max-width: 100%;
+        flex: 1 1 100%;
     }
 
     .admin-topbar {
@@ -996,6 +1026,14 @@ html {
         height: auto;
         min-height: var(--dms-topbar-height);
         flex-wrap: nowrap;
+        max-width: 100%;
+        overflow: hidden;
+    }
+
+    .topbar-title {
+        min-width: 0;
+        flex: 1 1 auto;
+        overflow: hidden;
     }
 
     .topbar-title .h5 {
@@ -1003,12 +1041,13 @@ html {
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        max-width: 42vw;
+        max-width: 100%;
     }
 
     .topbar-actions {
         gap: 0.25rem;
-        max-width: 100%;
+        flex: 0 0 auto;
+        max-width: 55%;
     }
 
     .rider-online-toggle .rider-online-btn {
@@ -1018,7 +1057,8 @@ html {
 
     .admin-content {
         padding: 1rem;
-        overflow-x: hidden;
+        overflow-x: clip;
+        width: 100%;
     }
 
     .page-header .row {
@@ -1045,20 +1085,36 @@ html {
 
     .card-body {
         padding: 1rem;
+        overflow-x: clip;
     }
 
     .table-card .card-body {
         padding: 0.75rem;
     }
 
-    /* Tables scroll inside card — do not push page width */
+    /*
+     * DataTables owns layout; Bootstrap .table-responsive + wide tables
+     * otherwise expands the document and causes page-level H-scroll.
+     */
     .table-responsive {
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
-        margin-left: -0.25rem;
-        margin-right: -0.25rem;
-        padding-left: 0.25rem;
-        padding-right: 0.25rem;
+        max-width: 100%;
+        width: 100%;
+        display: block;
+    }
+
+    .table-responsive > .dataTables_wrapper,
+    .table-card .dataTables_wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        max-width: 100%;
+    }
+
+    .dataTables_wrapper table.dataTable {
+        width: 100% !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
     }
 
     .dataTables_wrapper .row {
@@ -1096,6 +1152,7 @@ html {
         text-align: left !important;
         margin-top: 0.5rem;
         overflow-x: auto;
+        max-width: 100%;
     }
 
     .dataTables_wrapper .dt-buttons .btn {
@@ -1104,12 +1161,27 @@ html {
     }
 
     .notification-dropdown {
-        width: min(320px, calc(100vw - 1.25rem));
-        max-width: calc(100vw - 1.25rem);
+        width: min(320px, calc(100% - 1.25rem));
+        max-width: calc(100% - 1.25rem);
+        right: 0.5rem;
+        left: auto;
     }
 
     .input-group {
         flex-wrap: wrap;
+        max-width: 100%;
+    }
+
+    /* Date range groups: stack so two date inputs don't force H-scroll */
+    .input-group:has(> input[type='date']) {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .input-group:has(> input[type='date']) > .input-group-text,
+    .input-group:has(> input[type='date']) > .form-control {
+        width: 100%;
+        border-radius: 0.375rem !important;
     }
 
     .sidebar-toggle {
@@ -1193,7 +1265,7 @@ html {
     }
 
     .dt-button-collection {
-        max-width: calc(100vw - 1rem);
+        max-width: calc(100% - 1rem);
     }
 }
 
@@ -1296,7 +1368,7 @@ html {
 
 .notification-dropdown {
     width: 360px;
-    max-width: 90vw;
+    max-width: min(360px, calc(100% - 1.5rem));
 }
 
 .notification-dropdown-header {
