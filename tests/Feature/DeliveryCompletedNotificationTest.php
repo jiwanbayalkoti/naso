@@ -67,8 +67,20 @@ class DeliveryCompletedNotificationTest extends TestCase
                 $data = $notification->toDatabase($this->shopUser);
 
                 return $data['type'] === 'delivery_completed'
+                    && $notification->recipientRole() === 'shop'
                     && $data['delivery_uuid'] === $delivery->uuid
-                    && $data['tracking_number'] === $delivery->tracking_number;
+                    && $data['tracking_number'] === $delivery->tracking_number
+                    && array_key_exists('cod_amount', $data)
+                    && array_key_exists('shop_net', $data);
+            }
+        );
+
+        Notification::assertSentTo(
+            $this->riderUser,
+            DeliveryCompletedNotification::class,
+            function (DeliveryCompletedNotification $notification) {
+                return $notification->recipientRole() === 'rider'
+                    && str_contains($notification->toSms($this->riderUser), 'earning');
             }
         );
     }

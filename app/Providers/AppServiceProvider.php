@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use App\Notifications\Channels\SmsChannel;
 use App\Services\MenuService;
+use Illuminate\Notifications\ChannelManager;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -21,6 +23,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        $this->app->make(ChannelManager::class)->extend('sms', function ($app) {
+            return $app->make(SmsChannel::class);
+        });
+
         View::composer('layouts.partials.sidebar-nav', function ($view) {
             if (auth()->check()) {
                 $view->with('sidebarMenus', app(MenuService::class)->getSidebarForUser(auth()->user()));

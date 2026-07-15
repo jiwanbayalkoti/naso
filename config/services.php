@@ -35,4 +35,14 @@ return [
         'api_key' => env('GOOGLE_MAPS_API_KEY'),
     ],
 
+    'sms' => [
+        // log | http | sparrow
+        'driver' => env('SMS_DRIVER', 'log'),
+        'from' => env('SMS_FROM', 'NASO'),
+        'sparrow_token' => env('SPARROW_SMS_TOKEN'),
+        'http_url' => env('SMS_HTTP_URL'),
+        'http_token' => env('SMS_HTTP_TOKEN'),
+        'http_extra' => [],
+    ],
+
 ];

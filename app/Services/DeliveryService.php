@@ -9,7 +9,6 @@ use App\Helpers\DeliveryStatus;
 use App\Models\Delivery;
 use App\Models\DeliveryStatusHistory;
 use App\Models\Rider;
-use App\Notifications\DeliveryCompletedNotification;
 use App\Repositories\Contracts\DeliveryRepositoryInterface;
 use App\Repositories\Contracts\RiderRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -26,7 +25,8 @@ class DeliveryService extends BaseService
         protected ActivityLogService $activityLogService,
         protected AppSettingService $appSettingService,
         protected DeliveryFeeCalculatorService $feeCalculator,
-        protected WalletService $walletService
+        protected WalletService $walletService,
+        protected DeliverySettlementNotifier $settlementNotifier
     ) {}
 
     public function list(array $filters = []): LengthAwarePaginator
@@ -305,7 +305,7 @@ class DeliveryService extends BaseService
             }
 
             if ($status === DeliveryStatus::COMPLETED) {
-                $this->notifyShopDeliveryCompleted($delivery->fresh());
+                $this->settlementNotifier->notifyCompleted($delivery->fresh(['shop.user', 'rider.user']) ?? $delivery);
             }
 
             if ($status === DeliveryStatus::CANCELLED && $delivery->rider_id) {
@@ -512,18 +512,6 @@ class DeliveryService extends BaseService
             DeliveryStatus::CANCELLED => ActivityType::DELIVERY_CANCELLED,
             default => ActivityType::DELIVERY_STATUS_CHANGED,
         };
-    }
-
-    protected function notifyShopDeliveryCompleted(Delivery $delivery): void
-    {
-        $delivery->loadMissing(['shop.user', 'rider.user']);
-        $shopUser = $delivery->shop?->user;
-
-        if (! $shopUser) {
-            return;
-        }
-
-        $shopUser->notify(new DeliveryCompletedNotification($delivery));
     }
 
     protected function offerTimeoutMinutes(): int

@@ -67,6 +67,20 @@ class User extends Authenticatable
     ];
 
     /**
+     * Get the phone number for SMS notifications.
+     */
+    public function routeNotificationForSms(): ?string
+    {
+        if ($this->phone) {
+            return $this->phone;
+        }
+
+        $this->loadMissing(['shop', 'rider']);
+
+        return $this->shop?->phone;
+    }
+
+    /**
      * Get the shop owned by the user.
      */
     public function shop(): HasOne
