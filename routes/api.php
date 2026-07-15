@@ -11,7 +11,8 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DeliveryController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\NotificationController;
-use App\Http\Controllers\RegistrationApprovalController; 
+use App\Http\Controllers\PublicMediaController;
+use App\Http\Controllers\RegistrationApprovalController;
 use App\Http\Controllers\RiderController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\ShopController;
@@ -19,6 +20,10 @@ use App\Http\Controllers\UserController;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
+
+// Same media fallback for API clients (mobile).
+Route::get('media/{path}', [PublicMediaController::class, 'show'])
+    ->where('path', '.*');
 
 Route::get('health', function () {
     try {

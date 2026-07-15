@@ -7,7 +7,6 @@ use App\Traits\HasUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
-use Illuminate\Support\Facades\Storage;
 
 class VerificationDocument extends Model
 {
@@ -47,10 +46,6 @@ class VerificationDocument extends Model
 
     public function getUrlAttribute(): ?string
     {
-        if (! $this->file_path) {
-            return null;
-        }
-
-        return Storage::disk('public')->url($this->file_path);
+        return \App\Helpers\MediaUrlHelper::url($this->file_path);
     }
 }
