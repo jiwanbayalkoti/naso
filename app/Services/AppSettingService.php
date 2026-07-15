@@ -24,6 +24,10 @@ class AppSettingService extends BaseService
             'rider_registration_enabled' => true,
             'dashboard_refresh_interval' => (int) env('DASHBOARD_REFRESH_INTERVAL', 30),
             'delivery_offer_timeout_minutes' => (int) env('DELIVERY_OFFER_TIMEOUT_MINUTES', 15),
+            'delivery_base_fee' => 50,
+            'delivery_fee_per_km' => 25,
+            'delivery_min_fee' => 50,
+            'platform_commission_percent' => 20,
         ];
     }
 
@@ -96,6 +100,10 @@ class AppSettingService extends BaseService
             'rider_registration_enabled' => (bool) ($settings['rider_registration_enabled'] ?? true),
             'dashboard_refresh_interval' => (int) ($settings['dashboard_refresh_interval'] ?? 30),
             'delivery_offer_timeout_minutes' => (int) ($settings['delivery_offer_timeout_minutes'] ?? 15),
+            'delivery_base_fee' => (float) ($settings['delivery_base_fee'] ?? 50),
+            'delivery_fee_per_km' => (float) ($settings['delivery_fee_per_km'] ?? 25),
+            'delivery_min_fee' => (float) ($settings['delivery_min_fee'] ?? 50),
+            'platform_commission_percent' => (float) ($settings['platform_commission_percent'] ?? 20),
             'google_maps_api_key' => config('services.google_maps.api_key'),
         ];
     }
@@ -109,6 +117,7 @@ class AppSettingService extends BaseService
         return match ($key) {
             'shop_registration_enabled', 'rider_registration_enabled' => filter_var($value, FILTER_VALIDATE_BOOLEAN),
             'dashboard_refresh_interval', 'delivery_offer_timeout_minutes' => (int) $value,
+            'delivery_base_fee', 'delivery_fee_per_km', 'delivery_min_fee', 'platform_commission_percent' => (float) $value,
             default => $value,
         };
     }
@@ -119,6 +128,8 @@ class AppSettingService extends BaseService
             'shop_registration_enabled', 'rider_registration_enabled' => $value ? '1' : '0',
             'dashboard_refresh_interval' => (string) max(5, (int) $value),
             'delivery_offer_timeout_minutes' => (string) max(1, (int) $value),
+            'delivery_base_fee', 'delivery_fee_per_km', 'delivery_min_fee' => (string) max(0, (float) $value),
+            'platform_commission_percent' => (string) max(0, min(100, (float) $value)),
             default => (string) $value,
         };
     }

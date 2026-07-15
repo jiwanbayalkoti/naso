@@ -105,5 +105,24 @@
                 });
             });
         }
+
+        const $bankForm = $('#bank-details-form');
+        if ($bankForm.length) {
+            $bankForm.on('submit', function (event) {
+                event.preventDefault();
+                window.FormHelper.clearErrors($bankForm);
+
+                window.AjaxHelper.put($bankForm.data('update-url'), $bankForm.serialize(), {
+                    success: function (response) {
+                        window.NotificationHelper.success(response.message || 'Bank details saved.');
+                    },
+                    error: function (xhr, textStatus, errorThrown, handled) {
+                        if (handled?.errors) {
+                            window.FormHelper.showErrors($bankForm, handled.errors);
+                        }
+                    },
+                });
+            });
+        }
     });
 }(window, window.jQuery));

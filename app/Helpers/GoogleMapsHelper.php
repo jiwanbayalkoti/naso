@@ -107,6 +107,7 @@ class GoogleMapsHelper
             ],
             'distance_text' => null,
             'duration_text' => null,
+            'distance_meters' => null,
             'provider' => 'direct',
         ];
     }
@@ -145,11 +146,13 @@ class GoogleMapsHelper
             }
 
             $leg = $route['legs'][0] ?? [];
+            $distanceMeters = isset($leg['distance']['value']) ? (float) $leg['distance']['value'] : null;
 
             return [
                 'points' => self::decodePolyline($polyline),
                 'distance_text' => $leg['distance']['text'] ?? null,
                 'duration_text' => $leg['duration']['text'] ?? null,
+                'distance_meters' => $distanceMeters,
                 'provider' => 'google',
             ];
         } catch (\Throwable $exception) {
@@ -211,6 +214,7 @@ class GoogleMapsHelper
                 'points' => $points,
                 'distance_text' => self::formatDistance(is_numeric($distanceMeters) ? (float) $distanceMeters : null),
                 'duration_text' => self::formatDuration(is_numeric($durationSeconds) ? (float) $durationSeconds : null),
+                'distance_meters' => is_numeric($distanceMeters) ? (float) $distanceMeters : null,
                 'provider' => 'osrm',
             ];
         } catch (\Throwable $exception) {

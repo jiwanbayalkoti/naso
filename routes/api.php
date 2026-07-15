@@ -11,12 +11,14 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DeliveryController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\PayoutController;
 use App\Http\Controllers\PublicMediaController;
 use App\Http\Controllers\RegistrationApprovalController;
 use App\Http\Controllers\RiderController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\ShopController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\WalletController;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
@@ -61,6 +63,7 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
     Route::put('user', [ProfileController::class, 'update']);
     Route::put('user/password', [ProfileController::class, 'changePassword']);
     Route::post('user/avatar', [ProfileController::class, 'uploadAvatar']);
+    Route::put('user/bank-details', [ProfileController::class, 'updateBankDetails']);
     Route::post('logout', [LoginController::class, 'logout']);
 
     Route::prefix('dashboard')->name('api.dashboard.')->group(function () {
@@ -127,4 +130,11 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
     Route::get('settings', [SettingsController::class, 'show']);
     Route::put('settings', [SettingsController::class, 'update']);
     Route::post('settings/logo', [SettingsController::class, 'uploadLogo']);
+
+    Route::post('deliveries/estimate-fee', [WalletController::class, 'estimateFee']);
+    Route::get('wallet/shop/{shop?}', [WalletController::class, 'shopWallet']);
+    Route::get('wallet/rider/{rider?}', [WalletController::class, 'riderWallet']);
+    Route::get('payouts', [PayoutController::class, 'index']);
+    Route::post('payouts', [PayoutController::class, 'store']);
+    Route::post('payouts/{payout}/mark-paid', [PayoutController::class, 'markPaid']);
 });

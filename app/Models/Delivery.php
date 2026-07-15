@@ -43,8 +43,14 @@ class Delivery extends Model
         'delivered_at',
         'completed_at',
         'delivery_fee',
+        'distance_km',
+        'cod_amount',
+        'rider_earning',
+        'platform_commission',
         'payment_method',
         'payment_status',
+        'settled_at',
+        'cod_collected_at',
         'created_by',
         'updated_by',
         'deleted_by',
@@ -63,7 +69,13 @@ class Delivery extends Model
         'picked_up_at' => 'datetime',
         'delivered_at' => 'datetime',
         'completed_at' => 'datetime',
+        'settled_at' => 'datetime',
+        'cod_collected_at' => 'datetime',
         'delivery_fee' => 'decimal:2',
+        'distance_km' => 'decimal:2',
+        'cod_amount' => 'decimal:2',
+        'rider_earning' => 'decimal:2',
+        'platform_commission' => 'decimal:2',
     ];
 
     /**

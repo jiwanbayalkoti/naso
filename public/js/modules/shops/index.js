@@ -184,6 +184,9 @@
                     $('#shop_latitude').val(shop.latitude || '');
                     $('#shop_longitude').val(shop.longitude || '');
                     $('#shop_description').val(shop.description || '');
+                    $('#shop_bank_name').val(shop.bank_name || '');
+                    $('#shop_bank_account_name').val(shop.bank_account_name || '');
+                    $('#shop_bank_account_number').val(shop.bank_account_number || '');
                     $('#shop_is_active').prop('checked', !!shop.is_active);
                     window.FormHelper.clearErrors($('#shop-form'));
                     bootstrap.Modal.getOrCreateInstance(document.getElementById('shop-modal')).show();

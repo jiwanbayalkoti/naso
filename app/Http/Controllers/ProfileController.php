@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Profile\ChangePasswordRequest;
+use App\Http\Requests\Profile\UpdateBankDetailsRequest;
 use App\Http\Requests\Profile\UpdateProfileRequest;
 use App\Http\Requests\Profile\UploadAvatarRequest;
 use App\Http\Resources\RiderResource;
@@ -73,5 +74,27 @@ class ProfileController extends Controller
             'shop' => $user->shop ? new ShopResource($user->shop) : null,
             'rider' => $user->rider ? new RiderResource($user->rider) : null,
         ], 'Profile photo updated successfully.');
+    }
+
+    public function updateBankDetails(UpdateBankDetailsRequest $request): JsonResponse
+    {
+        $user = $request->user()->load(['shop', 'rider.user']);
+        $data = $request->validated();
+
+        if ($user->hasRole('shop') && $user->shop) {
+            $user->shop->update($data);
+            $user->load('shop');
+        } elseif ($user->hasRole('rider') && $user->rider) {
+            $user->rider->update($data);
+            $user->load('rider.user');
+        } else {
+            abort(403, 'Only shop and rider accounts can update bank details here.');
+        }
+
+        return $this->success([
+            'user' => new UserResource($user->load('roles')),
+            'shop' => $user->shop ? new ShopResource($user->shop) : null,
+            'rider' => $user->rider ? new RiderResource($user->rider) : null,
+        ], 'Bank details saved.');
     }
 }

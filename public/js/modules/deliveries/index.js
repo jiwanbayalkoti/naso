@@ -410,7 +410,10 @@
 
             $('#delivery_priority').val('normal');
             $('#payment_status').val('pending');
-            $('#delivery_fee').val('0');
+            $('#payment_method').val('cod');
+            $('#cod_amount').val('0');
+            $('#delivery_fee').val('');
+            $('#fee-distance-hint').text('Calculated from distance');
 
             if (defaultPickup) {
                 $('#pickup_address').val(defaultPickup);
@@ -424,6 +427,56 @@
             if (window.LocationHelper) {
                 window.LocationHelper.applyDefaultDeliveryLocation();
             }
+
+            this.bindFeeEstimate();
+        },
+
+        bindFeeEstimate() {
+            const self = this;
+            const $form = $('#delivery-form');
+            if (!$form.length || $form.data('fee-bound')) {
+                return;
+            }
+            $form.data('fee-bound', true);
+
+            let timer = null;
+            const run = function () {
+                clearTimeout(timer);
+                timer = setTimeout(function () {
+                    self.estimateFee();
+                }, 500);
+            };
+
+            $form.on('change blur', '#pickup_address, #delivery_address, #delivery_shop_id, #delivery_latitude, #delivery_longitude', run);
+        },
+
+        estimateFee() {
+            const payload = {
+                shop_id: $('#delivery_shop_id').val() || null,
+                pickup_address: $('#pickup_address').val() || '',
+                delivery_address: $('#delivery_address').val() || '',
+                latitude: $('#delivery_latitude').val() || null,
+                longitude: $('#delivery_longitude').val() || null,
+            };
+
+            if (!payload.pickup_address || !payload.delivery_address) {
+                return;
+            }
+
+            window.AjaxHelper.post(this.routes.estimateFee || '/deliveries/estimate-fee', payload, {
+                showLoader: false,
+                success(response) {
+                    const data = response.data || response;
+                    if (data.delivery_fee != null) {
+                        $('#delivery_fee').val(data.delivery_fee);
+                    }
+                    if (data.distance_km != null) {
+                        $('#fee-distance-hint').text(
+                            data.distance_km + ' km · fee Rs ' + data.delivery_fee
+                        );
+                    }
+                },
+            });
         },
 
         openEditModal(id) {
@@ -450,11 +503,16 @@
                     $('#delivery_latitude').val(delivery.latitude || '');
                     $('#delivery_longitude').val(delivery.longitude || '');
                     $('#delivery_fee').val(delivery.delivery_fee || '0');
-                    $('#payment_method').val(delivery.payment_method || '');
+                    $('#cod_amount').val(delivery.cod_amount || '0');
+                    $('#payment_method').val(delivery.payment_method || 'cod');
                     $('#payment_status').val(delivery.payment_status || 'pending');
                     $('#delivery_notes').val(delivery.notes || '');
+                    if (delivery.distance_km) {
+                        $('#fee-distance-hint').text(delivery.distance_km + ' km');
+                    }
                     window.FormHelper.clearErrors($('#delivery-form'));
                     bootstrap.Modal.getOrCreateInstance(document.getElementById('delivery-modal')).show();
+                    self.bindFeeEstimate();
                 },
             });
         },

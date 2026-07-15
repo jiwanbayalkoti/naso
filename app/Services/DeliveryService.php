@@ -24,7 +24,9 @@ class DeliveryService extends BaseService
         protected RiderRepositoryInterface $riderRepository,
         protected AuditLogService $auditLogService,
         protected ActivityLogService $activityLogService,
-        protected AppSettingService $appSettingService
+        protected AppSettingService $appSettingService,
+        protected DeliveryFeeCalculatorService $feeCalculator,
+        protected WalletService $walletService
     ) {}
 
     public function list(array $filters = []): LengthAwarePaginator
@@ -51,7 +53,35 @@ class DeliveryService extends BaseService
             $data['status'] = DeliveryStatus::PENDING;
             $data['offer_expires_at'] = now()->addMinutes($this->offerTimeoutMinutes());
 
-            $delivery = $this->deliveryRepository->create($data);
+            $shop = null;
+            if (! empty($data['shop_id'])) {
+                $shop = \App\Models\Shop::query()->find($data['shop_id']);
+            }
+
+            $estimate = $this->feeCalculator->estimate(
+                pickupLat: isset($data['pickup_latitude']) ? (float) $data['pickup_latitude'] : null,
+                pickupLng: isset($data['pickup_longitude']) ? (float) $data['pickup_longitude'] : null,
+                dropLat: isset($data['latitude']) ? (float) $data['latitude'] : null,
+                dropLng: isset($data['longitude']) ? (float) $data['longitude'] : null,
+                pickupAddress: $data['pickup_address'] ?? null,
+                dropAddress: $data['delivery_address'] ?? null,
+                shop: $shop
+            );
+
+            $data['distance_km'] = $estimate['distance_km'];
+            // Auto fee from distance; super_admin may override explicitly.
+            $user = $userId ? \App\Models\User::query()->find($userId) : null;
+            if (! ($user?->hasRole('super_admin') && array_key_exists('delivery_fee', $data) && $data['delivery_fee'] !== null && $data['delivery_fee'] !== '')) {
+                $data['delivery_fee'] = $estimate['delivery_fee'];
+            }
+            $data['cod_amount'] = (float) ($data['cod_amount'] ?? 0);
+            if (($data['payment_method'] ?? null) === 'cod' || $data['cod_amount'] > 0) {
+                $data['payment_method'] = $data['payment_method'] ?: 'cod';
+            }
+
+            unset($data['pickup_latitude'], $data['pickup_longitude']);
+
+            $delivery = $this->deliveryRepository->create(Arr::only($data, (new Delivery)->getFillable()));
 
             $this->recordStatusHistory($delivery, DeliveryStatus::PENDING, null, $userId);
             $this->auditLogService->log($userId, $delivery, 'created', null, $delivery->toArray());
@@ -270,8 +300,12 @@ class DeliveryService extends BaseService
                 }
             }
 
+            if (in_array($status, [DeliveryStatus::DELIVERED, DeliveryStatus::COMPLETED], true)) {
+                $delivery = $this->walletService->settleCompletedDelivery($delivery, $userId);
+            }
+
             if ($status === DeliveryStatus::COMPLETED) {
-                $this->notifyShopDeliveryCompleted($delivery);
+                $this->notifyShopDeliveryCompleted($delivery->fresh());
             }
 
             if ($status === DeliveryStatus::CANCELLED && $delivery->rider_id) {

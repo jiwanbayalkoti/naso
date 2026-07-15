@@ -87,26 +87,36 @@
     </div>
 
     <div class="row">
-        <div class="col-md-4 mb-3">
+        <div class="col-md-3 mb-3">
+            <label for="cod_amount" class="form-label">COD Amount (goods)</label>
+            <div class="input-group">
+                <span class="input-group-text">Rs</span>
+                <input type="number" step="0.01" min="0" class="form-control" name="cod_amount" id="cod_amount" placeholder="0.00" value="0">
+            </div>
+            <div class="form-text">Cash rider collects from customer.</div>
+            <div class="invalid-feedback d-block" data-field="cod_amount"></div>
+        </div>
+        <div class="col-md-3 mb-3">
             <label for="delivery_fee" class="form-label">Delivery Fee</label>
             <div class="input-group">
-                <span class="input-group-text">$</span>
-                <input type="number" step="0.01" min="0" class="form-control" name="delivery_fee" id="delivery_fee" placeholder="0.00" value="0">
+                <span class="input-group-text">Rs</span>
+                <input type="number" step="0.01" min="0" class="form-control" name="delivery_fee" id="delivery_fee"
+                       placeholder="Auto" value="" @unless(auth()->user()?->hasRole('super_admin')) readonly @endunless>
             </div>
+            <div class="form-text"><span id="fee-distance-hint">Calculated from distance</span></div>
             <div class="invalid-feedback d-block" data-field="delivery_fee"></div>
         </div>
-        <div class="col-md-4 mb-3">
+        <div class="col-md-3 mb-3">
             <label for="payment_method" class="form-label">Payment Method</label>
             <select class="form-select" name="payment_method" id="payment_method">
-                <option value="">Select method</option>
-                <option value="cash">Cash</option>
-                <option value="card">Card</option>
+                <option value="cod" selected>Cash on Delivery</option>
+                <option value="cash">Cash (no goods COD)</option>
                 <option value="online">Online</option>
-                <option value="wallet">Wallet</option>
+                <option value="card">Card</option>
             </select>
             <div class="invalid-feedback d-block" data-field="payment_method"></div>
         </div>
-        <div class="col-md-4 mb-3">
+        <div class="col-md-3 mb-3">
             <label for="payment_status" class="form-label">Payment Status</label>
             <select class="form-select" name="payment_status" id="payment_status">
                 <option value="pending">Pending</option>

@@ -39,8 +39,11 @@ class UpdateDeliveryRequest extends FormRequest
             'priority' => ['sometimes', 'string', Rule::in(['low', 'normal', 'high', 'urgent'])],
             'notes' => ['nullable', 'string'],
             'delivery_fee' => ['sometimes', 'numeric', 'min:0'],
-            'payment_method' => ['nullable', 'string', Rule::in(['cash', 'card', 'online', 'wallet'])],
+            'cod_amount' => ['sometimes', 'numeric', 'min:0'],
+            'payment_method' => ['nullable', 'string', Rule::in(['cash', 'cod', 'card', 'online', 'wallet'])],
             'payment_status' => ['sometimes', 'string', Rule::in(['pending', 'paid', 'failed', 'refunded'])],
+            'pickup_latitude' => ['nullable', 'numeric', 'between:-90,90'],
+            'pickup_longitude' => ['nullable', 'numeric', 'between:-180,180'],
         ];
     }
 }

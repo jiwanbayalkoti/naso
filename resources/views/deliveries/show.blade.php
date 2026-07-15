@@ -102,11 +102,32 @@
                             </div>
                             <div class="col-md-6">
                                 <label class="text-muted small d-block">Delivery Fee</label>
-                                <strong>${{ number_format($delivery->delivery_fee, 2) }}</strong>
+                                <strong>Rs {{ number_format($delivery->delivery_fee, 2) }}</strong>
                                 <div class="text-muted small">
                                     {{ ucfirst($delivery->payment_method ?? 'N/A') }} · {{ ucfirst($delivery->payment_status) }}
+                                    @if($delivery->distance_km)
+                                        · {{ number_format($delivery->distance_km, 2) }} km
+                                    @endif
                                 </div>
                             </div>
+                            <div class="col-md-6">
+                                <label class="text-muted small d-block">COD (goods)</label>
+                                <strong>Rs {{ number_format($delivery->cod_amount ?? 0, 2) }}</strong>
+                                <div class="text-muted small">Rider collects from customer</div>
+                            </div>
+                            @if($delivery->rider_earning !== null || $delivery->platform_commission !== null)
+                                <div class="col-md-6">
+                                    <label class="text-muted small d-block">Rider earning</label>
+                                    <strong>Rs {{ number_format($delivery->rider_earning ?? 0, 2) }}</strong>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="text-muted small d-block">Platform commission</label>
+                                    <strong>Rs {{ number_format($delivery->platform_commission ?? 0, 2) }}</strong>
+                                    @if($delivery->settled_at)
+                                        <div class="text-muted small">Settled {{ $delivery->settled_at->format('M d, Y H:i') }}</div>
+                                    @endif
+                                </div>
+                            @endif
                             <div class="col-12">
                                 <label class="text-muted small d-block">Pickup Address</label>
                                 <p class="mb-0">{{ $delivery->pickup_address }}</p>

@@ -44,18 +44,7 @@ class SettingsController extends Controller
             $request->user()->id
         );
 
-        return $this->success([
-            'app_name' => $settings['app_name'],
-            'app_logo' => $settings['app_logo'] ?? null,
-            'app_logo_url' => $this->appSettingService->publicPayload()['app_logo_url'],
-            'support_email' => $settings['support_email'],
-            'support_phone' => $settings['support_phone'],
-            'shop_registration_enabled' => (bool) $settings['shop_registration_enabled'],
-            'rider_registration_enabled' => (bool) $settings['rider_registration_enabled'],
-            'dashboard_refresh_interval' => (int) $settings['dashboard_refresh_interval'],
-            'delivery_offer_timeout_minutes' => (int) $settings['delivery_offer_timeout_minutes'],
-            'google_maps_api_key' => config('services.google_maps.api_key'),
-        ], 'Settings updated successfully.');
+        return $this->success($this->appSettingService->publicPayload(), 'Settings updated successfully.');
     }
 
     public function uploadLogo(UploadLogoRequest $request): JsonResponse

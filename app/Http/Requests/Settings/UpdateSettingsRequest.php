@@ -24,6 +24,10 @@ class UpdateSettingsRequest extends FormRequest
             'rider_registration_enabled' => ['sometimes', 'boolean'],
             'dashboard_refresh_interval' => ['required', 'integer', 'min:5', 'max:300'],
             'delivery_offer_timeout_minutes' => ['required', 'integer', 'min:1', 'max:1440'],
+            'delivery_base_fee' => ['required', 'numeric', 'min:0'],
+            'delivery_fee_per_km' => ['required', 'numeric', 'min:0'],
+            'delivery_min_fee' => ['required', 'numeric', 'min:0'],
+            'platform_commission_percent' => ['required', 'numeric', 'min:0', 'max:100'],
         ];
     }
 }

@@ -43,6 +43,10 @@ class Rider extends Model
         'last_seen_at',
         'rating',
         'total_deliveries',
+        'balance',
+        'bank_name',
+        'bank_account_name',
+        'bank_account_number',
         'created_by',
         'updated_by',
         'deleted_by',
@@ -63,6 +67,7 @@ class Rider extends Model
         'rating' => 'decimal:2',
         'total_deliveries' => 'integer',
         'approved_at' => 'datetime',
+        'balance' => 'decimal:2',
     ];
 
     /**

@@ -43,6 +43,10 @@ class Shop extends Model
         'description',
         'pan_number',
         'nid_number',
+        'balance',
+        'bank_name',
+        'bank_account_name',
+        'bank_account_number',
         'created_by',
         'updated_by',
         'deleted_by',
@@ -58,6 +62,7 @@ class Shop extends Model
         'longitude' => 'decimal:8',
         'is_active' => 'boolean',
         'approved_at' => 'datetime',
+        'balance' => 'decimal:2',
     ];
 
     /**

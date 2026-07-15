@@ -18,6 +18,7 @@
             'rejectAssignment' => route('deliveries.reject-assignment', ['delivery' => '__ID__']),
             'status' => route('deliveries.status', ['delivery' => '__ID__']),
             'assignableRiders' => route('riders.assignable'),
+            'estimateFee' => route('deliveries.estimate-fee'),
         ];
 
         $statusLabels = DeliveryStatus::labels();

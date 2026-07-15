@@ -32,6 +32,9 @@ class UpdateRiderRequest extends FormRequest
             'is_available' => ['sometimes', 'boolean'],
             'current_latitude' => ['nullable', 'numeric', 'between:-90,90'],
             'current_longitude' => ['nullable', 'numeric', 'between:-180,180'],
+            'bank_name' => ['nullable', 'string', 'max:255'],
+            'bank_account_name' => ['nullable', 'string', 'max:255'],
+            'bank_account_number' => ['nullable', 'string', 'max:100'],
         ];
     }
 }

@@ -161,6 +161,45 @@
                 </div>
             </div>
 
+            @if($shop || $rider)
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Bank details</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted small">Admin transfers payouts to this account.</p>
+                        <form id="bank-details-form" data-update-url="{{ route('profile.bank-details') }}">
+                            @csrf
+                            @method('PUT')
+                            @php
+                                $bankSource = $shop ?? $rider;
+                            @endphp
+                            <div class="mb-3">
+                                <label class="form-label" for="bank-name">Bank name</label>
+                                <input type="text" class="form-control" id="bank-name" name="bank_name"
+                                       value="{{ old('bank_name', $bankSource->bank_name) }}" placeholder="e.g. Nabil Bank">
+                                <div class="invalid-feedback" data-error="bank_name"></div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" for="bank-account-name">Account name</label>
+                                <input type="text" class="form-control" id="bank-account-name" name="bank_account_name"
+                                       value="{{ old('bank_account_name', $bankSource->bank_account_name) }}" placeholder="Account holder">
+                                <div class="invalid-feedback" data-error="bank_account_name"></div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" for="bank-account-number">Account number</label>
+                                <input type="text" class="form-control" id="bank-account-number" name="bank_account_number"
+                                       value="{{ old('bank_account_number', $bankSource->bank_account_number) }}" placeholder="Account number">
+                                <div class="invalid-feedback" data-error="bank_account_number"></div>
+                            </div>
+                            <button type="submit" class="btn btn-outline-primary">
+                                <i class="fa-solid fa-building-columns me-1"></i> Save bank details
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            @endif
+
             @if(auth()->user()->hasRole('super_admin'))
                 <div class="card mt-4">
                     <div class="card-body d-flex justify-content-between align-items-center">

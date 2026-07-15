@@ -90,6 +90,26 @@
         <div class="invalid-feedback d-block" data-field="description"></div>
     </div>
 
+    <hr class="my-3">
+    <p class="text-muted small mb-3"><i class="fa-solid fa-building-columns me-1"></i> Bank details (for payout transfer)</p>
+    <div class="row">
+        <div class="col-md-4 mb-3">
+            <label for="shop_bank_name" class="form-label">Bank name</label>
+            <input type="text" class="form-control" name="bank_name" id="shop_bank_name" placeholder="e.g. Nabil Bank">
+            <div class="invalid-feedback d-block" data-field="bank_name"></div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <label for="shop_bank_account_name" class="form-label">Account name</label>
+            <input type="text" class="form-control" name="bank_account_name" id="shop_bank_account_name" placeholder="Account holder">
+            <div class="invalid-feedback d-block" data-field="bank_account_name"></div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <label for="shop_bank_account_number" class="form-label">Account number</label>
+            <input type="text" class="form-control" name="bank_account_number" id="shop_bank_account_number" placeholder="Account number">
+            <div class="invalid-feedback d-block" data-field="bank_account_number"></div>
+        </div>
+    </div>
+
     <div class="form-check form-switch">
         <input class="form-check-input" type="checkbox" name="is_active" id="shop_is_active" value="1" checked>
         <label class="form-check-label" for="shop_is_active">Active</label>

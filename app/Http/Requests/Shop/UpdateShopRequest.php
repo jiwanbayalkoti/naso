@@ -37,6 +37,9 @@ class UpdateShopRequest extends FormRequest
             'logo' => ['nullable', 'string', 'max:255'],
             'is_active' => ['sometimes', 'boolean'],
             'description' => ['nullable', 'string'],
+            'bank_name' => ['nullable', 'string', 'max:255'],
+            'bank_account_name' => ['nullable', 'string', 'max:255'],
+            'bank_account_number' => ['nullable', 'string', 'max:100'],
         ];
     }
 }

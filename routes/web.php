@@ -8,6 +8,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DeliveryController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\PayoutController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicMediaController;
 use App\Http\Controllers\RegistrationApprovalController;
@@ -15,6 +16,7 @@ use App\Http\Controllers\RiderController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\ShopController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\WalletController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -140,11 +142,23 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::put('/', [ProfileController::class, 'update'])->name('update');
         Route::put('password', [ProfileController::class, 'changePassword'])->name('password');
         Route::post('avatar', [ProfileController::class, 'uploadAvatar'])->name('avatar');
+        Route::put('bank-details', [ProfileController::class, 'updateBankDetails'])->name('bank-details');
     });
 
     Route::prefix('settings')->name('settings.')->group(function () {
         Route::get('/', [SettingsController::class, 'index'])->name('index');
         Route::put('/', [SettingsController::class, 'update'])->name('update');
         Route::post('logo', [SettingsController::class, 'uploadLogo'])->name('logo');
+    });
+
+    Route::post('deliveries/estimate-fee', [WalletController::class, 'estimateFee'])->name('deliveries.estimate-fee');
+
+    Route::get('wallet/shop/{shop?}', [WalletController::class, 'shopWallet'])->name('wallet.shop');
+    Route::get('wallet/rider/{rider?}', [WalletController::class, 'riderWallet'])->name('wallet.rider');
+
+    Route::prefix('payouts')->name('payouts.')->group(function () {
+        Route::get('/', [PayoutController::class, 'index'])->name('index');
+        Route::post('/', [PayoutController::class, 'store'])->name('store');
+        Route::post('{payout}/mark-paid', [PayoutController::class, 'markPaid'])->name('mark-paid');
     });
 });

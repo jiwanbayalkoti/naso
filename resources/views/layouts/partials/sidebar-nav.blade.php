@@ -22,4 +22,28 @@
             <span>Live Riders</span>
         </a>
     @endif
+
+    @if(auth()->user()->hasRole('shop'))
+        <a href="{{ route('wallet.shop') }}"
+           class="sidebar-link {{ request()->routeIs('wallet.shop') ? 'active' : '' }}">
+            <i class="fa-solid fa-wallet"></i>
+            <span>My Wallet</span>
+        </a>
+    @endif
+
+    @if(auth()->user()->hasRole('rider'))
+        <a href="{{ route('wallet.rider') }}"
+           class="sidebar-link {{ request()->routeIs('wallet.rider') ? 'active' : '' }}">
+            <i class="fa-solid fa-wallet"></i>
+            <span>My Earnings</span>
+        </a>
+    @endif
+
+    @if(auth()->user()->hasRole('super_admin'))
+        <a href="{{ route('payouts.index') }}"
+           class="sidebar-link {{ request()->routeIs('payouts.*') ? 'active' : '' }}">
+            <i class="fa-solid fa-money-bill-transfer"></i>
+            <span>Payouts</span>
+        </a>
+    @endif
 </nav>

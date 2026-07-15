@@ -218,6 +218,9 @@
                     $('#vehicle_type').val(rider.vehicle_type || '');
                     $('#vehicle_number').val(rider.vehicle_number || '');
                     $('#license_number').val(rider.license_number || '');
+                    $('#rider_bank_name').val(rider.bank_name || '');
+                    $('#rider_bank_account_name').val(rider.bank_account_name || '');
+                    $('#rider_bank_account_number').val(rider.bank_account_number || '');
                     $('#rider_is_available').prop('checked', rider.is_available !== false);
                     window.FormHelper.clearErrors($('#rider-form'));
                     bootstrap.Modal.getOrCreateInstance(document.getElementById('rider-modal')).show();

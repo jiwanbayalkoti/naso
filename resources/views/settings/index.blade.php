@@ -57,6 +57,35 @@
                                 <div class="form-text">Unclaimed deliveries auto-cancel after this time. Default: 15 minutes.</div>
                                 <div class="invalid-feedback" data-error="delivery_offer_timeout_minutes"></div>
                             </div>
+
+                            <div class="col-12"><hr class="my-2"><h6 class="mb-0">Delivery pricing & commission</h6>
+                                <p class="text-muted small mb-0">Fee = max(min fee, base + distance_km × per km). Rider earning = fee − platform commission %.</p>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label" for="settings-base-fee">Base fee</label>
+                                <input type="number" step="0.01" min="0" class="form-control" id="settings-base-fee" name="delivery_base_fee"
+                                       value="{{ $settings['delivery_base_fee'] ?? 50 }}" required>
+                                <div class="invalid-feedback" data-error="delivery_base_fee"></div>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label" for="settings-per-km">Fee per km</label>
+                                <input type="number" step="0.01" min="0" class="form-control" id="settings-per-km" name="delivery_fee_per_km"
+                                       value="{{ $settings['delivery_fee_per_km'] ?? 25 }}" required>
+                                <div class="invalid-feedback" data-error="delivery_fee_per_km"></div>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label" for="settings-min-fee">Minimum fee</label>
+                                <input type="number" step="0.01" min="0" class="form-control" id="settings-min-fee" name="delivery_min_fee"
+                                       value="{{ $settings['delivery_min_fee'] ?? 50 }}" required>
+                                <div class="invalid-feedback" data-error="delivery_min_fee"></div>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label" for="settings-commission">Platform commission %</label>
+                                <input type="number" step="0.01" min="0" max="100" class="form-control" id="settings-commission" name="platform_commission_percent"
+                                       value="{{ $settings['platform_commission_percent'] ?? 20 }}" required>
+                                <div class="invalid-feedback" data-error="platform_commission_percent"></div>
+                            </div>
+
                             <div class="col-md-6">
                                 <label class="form-label" for="settings-support-email">Support email</label>
                                 <input type="email" class="form-control" id="settings-support-email" name="support_email"
