@@ -33,7 +33,12 @@
             <div class="guest-brand text-center mb-4">
                 <div class="guest-logo {{ !empty($branding['app_logo_url']) ? 'guest-logo--image' : '' }}">
                     @if(!empty($branding['app_logo_url']))
-                        <img src="{{ $branding['app_logo_url'] }}" alt="{{ $brandName }}" class="guest-logo-image">
+                        <img src="{{ $branding['app_logo_url'] }}"
+                             alt="{{ $brandName }}"
+                             class="guest-logo-image"
+                             width="60"
+                             height="60"
+                             decoding="async">
                     @else
                         <i class="fa-solid fa-truck-fast"></i>
                     @endif
