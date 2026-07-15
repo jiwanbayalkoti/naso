@@ -33,7 +33,8 @@
         </div>
     </div>
 
-    <div class="admin-wrapper">
+    <div class="admin-wrapper" id="admin-wrapper">
+        <div class="sidebar-backdrop" id="sidebar-backdrop" aria-hidden="true"></div>
         <aside class="admin-sidebar" id="admin-sidebar">
             <div class="sidebar-brand" id="sidebar-brand">
                 @if(!empty($branding['app_logo_url']))
@@ -189,18 +190,19 @@
     <script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.bootstrap5.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
-    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.colVis.min.js"></script>
     <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
     <script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    {{-- Heavy export libs deferred so first paint / menu toggle stay responsive on mobile --}}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js" defer></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js" defer></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js" defer></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.colVis.min.js" defer></script>
+    @stack('charts')
 
     <script src="{{ asset('js/core/notification-helper.js') }}"></script>
     <script src="{{ asset('js/core/ajax-helper.js') }}"></script>
@@ -220,13 +222,18 @@
                 window.NotificationHelper.initToastr();
             }
 
-            const toggle = document.getElementById('sidebar-toggle');
-            const sidebar = document.getElementById('admin-sidebar');
-            if (toggle && sidebar) {
-                toggle.addEventListener('click', function () {
-                    sidebar.classList.toggle('is-open');
+            // Sidebar is initialized in AjaxHelper (class: .show + backdrop).
+            // Close menu when a nav link is tapped on mobile.
+            document.querySelectorAll('#admin-sidebar .sidebar-link').forEach(function (link) {
+                link.addEventListener('click', function () {
+                    if (window.matchMedia('(max-width: 991.98px)').matches) {
+                        document.getElementById('admin-wrapper')?.classList.remove('sidebar-open');
+                        document.getElementById('admin-sidebar')?.classList.remove('show');
+                        document.getElementById('sidebar-backdrop')?.classList.remove('show');
+                        document.body.classList.remove('sidebar-open');
+                    }
                 });
-            }
+            });
 
             const logoutForm = document.getElementById('logout-form');
             if (logoutForm && window.AjaxHelper) {

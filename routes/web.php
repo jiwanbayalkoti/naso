@@ -62,6 +62,8 @@ Route::middleware(['auth', 'active'])->group(function () {
 
     Route::prefix('riders')->name('riders.')->group(function () {
         Route::get('/', [RiderController::class, 'index'])->name('index');
+        Route::get('live-map', [RiderController::class, 'liveMap'])->name('live-map');
+        Route::get('live-locations', [RiderController::class, 'liveLocations'])->name('live-locations');
         Route::get('datatable', [RiderController::class, 'datatable'])->name('datatable');
         Route::get('create', [RiderController::class, 'create'])->name('create');
         Route::get('export/{format}', [RiderController::class, 'export'])->name('export');

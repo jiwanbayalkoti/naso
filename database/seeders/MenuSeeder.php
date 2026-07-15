@@ -46,6 +46,14 @@ class MenuSeeder extends Seeder
                 'sort_order' => 4,
             ],
             [
+                'title' => 'Live Riders',
+                'icon' => 'fa-solid fa-location-dot',
+                'route_name' => 'riders.live-map',
+                'route_pattern' => 'riders.live-*',
+                'permission' => 'riders.view',
+                'sort_order' => 4,
+            ],
+            [
                 'title' => 'Users',
                 'icon' => 'fa-solid fa-users',
                 'route_name' => 'users.index',

@@ -74,7 +74,9 @@
         },
 
         startPolling() {
-            const interval = 10000;
+            // Mobile live web: poll less often to reduce network lag.
+            const isMobile = window.matchMedia('(max-width: 991.98px)').matches;
+            const interval = isMobile ? 25000 : 15000;
             this.pollTimer = setInterval(() => this.refresh(true), interval);
         },
 

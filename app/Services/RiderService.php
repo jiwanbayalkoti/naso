@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Helpers\ActivityType;
+use App\Helpers\DeliveryStatus;
 use App\Models\Rider;
 use App\Repositories\Contracts\RiderRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -185,6 +186,78 @@ class RiderService extends BaseService
     public function getAssignable(): Collection
     {
         return $this->riderRepository->getAssignable();
+    }
+
+    /**
+     * Live GPS points for the rider map (admin: all with coords; shop: online + on their active deliveries).
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function getLiveMapLocations(?\App\Models\User $user = null): array
+    {
+        $user = $user ?: auth()->user();
+
+        $query = Rider::query()
+            ->with('user')
+            ->whereNotNull('current_latitude')
+            ->whereNotNull('current_longitude')
+            ->whereHas('user', fn ($q) => $q->where('is_active', true));
+
+        if ($user?->hasRole('shop')) {
+            $shopId = $user->shop?->id;
+            if (! $shopId) {
+                return [];
+            }
+
+            $activeStatuses = [
+                DeliveryStatus::ASSIGNED,
+                DeliveryStatus::ACCEPTED,
+                DeliveryStatus::PICKED_UP,
+                DeliveryStatus::ON_THE_WAY,
+                DeliveryStatus::DELIVERED,
+            ];
+
+            $assignedIds = \App\Models\Delivery::query()
+                ->where('shop_id', $shopId)
+                ->whereIn('status', $activeStatuses)
+                ->whereNotNull('rider_id')
+                ->pluck('rider_id')
+                ->unique()
+                ->filter()
+                ->values()
+                ->all();
+
+            $query->where(function ($builder) use ($assignedIds) {
+                $builder->presentOnline();
+                if ($assignedIds !== []) {
+                    $builder->orWhereIn('id', $assignedIds);
+                }
+            });
+        } elseif (! $user?->hasRole('super_admin') && ! $user?->can('riders.view')) {
+            return [];
+        }
+
+        return $query
+            ->orderByDesc('location_updated_at')
+            ->get()
+            ->map(function (Rider $rider) {
+                return [
+                    'uuid' => $rider->uuid,
+                    'id' => $rider->id,
+                    'name' => $rider->user?->name ?? ('Rider #'.$rider->id),
+                    'phone' => $rider->user?->phone,
+                    'is_online' => $rider->isPresentlyOnline(),
+                    'is_available' => (bool) $rider->is_available && $rider->isPresentlyOnline(),
+                    'latitude' => (float) $rider->current_latitude,
+                    'longitude' => (float) $rider->current_longitude,
+                    'location_updated_at' => $rider->location_updated_at?->toIso8601String(),
+                    'vehicle_type' => $rider->vehicle_type,
+                    'vehicle_number' => $rider->vehicle_number,
+                    'status' => $rider->isPresentlyOnline() ? 'Online' : 'Offline',
+                ];
+            })
+            ->values()
+            ->all();
     }
 
     public function updateLocation(string $uuid, float $latitude, float $longitude, ?int $userId = null): Rider

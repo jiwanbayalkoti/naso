@@ -205,6 +205,10 @@ a {
     visibility: visible;
 }
 
+body.sidebar-open {
+    overflow: hidden;
+}
+
 .admin-main {
     flex: 1;
     margin-left: var(--dms-sidebar-width);

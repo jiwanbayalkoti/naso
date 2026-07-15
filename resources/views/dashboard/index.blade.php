@@ -163,6 +163,10 @@
     </div>
 @endsection
 
+@push('charts')
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+@endpush
+
 @push('scripts')
     <script src="{{ asset('js/dashboard/index.js') }}"></script>
 @endpush

@@ -63,4 +63,16 @@ class RiderPolicy
 
         return false;
     }
+
+    /**
+     * Live map of rider GPS — admin sees all; shop sees online + riders on their deliveries.
+     */
+    public function trackLive(User $user): bool
+    {
+        if ($user->hasRole('super_admin') || $user->can('riders.view')) {
+            return true;
+        }
+
+        return $user->hasRole('shop') && $user->can('deliveries.view');
+    }
 }

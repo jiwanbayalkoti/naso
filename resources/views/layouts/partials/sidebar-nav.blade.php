@@ -1,5 +1,6 @@
 <nav class="sidebar-nav">
     @forelse($sidebarMenus ?? [] as $menu)
+        @continue($menu->route_name === 'riders.live-map')
         <a href="{{ $menu->resolved_url }}"
            class="sidebar-link {{ $menu->isActiveRoute() ? 'active' : '' }}">
             @if($menu->icon)
@@ -13,4 +14,12 @@
             <span>Dashboard</span>
         </a>
     @endforelse
+
+    @if(auth()->user()->hasAnyRole(['super_admin', 'shop']))
+        <a href="{{ route('riders.live-map') }}"
+           class="sidebar-link {{ request()->routeIs('riders.live-map') ? 'active' : '' }}">
+            <i class="fa-solid fa-location-dot"></i>
+            <span>Live Riders</span>
+        </a>
+    @endif
 </nav>

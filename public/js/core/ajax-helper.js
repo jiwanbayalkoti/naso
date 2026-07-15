@@ -277,17 +277,41 @@
             const $wrapper = $('#admin-wrapper');
             const $sidebar = $('#admin-sidebar');
             const $backdrop = $('#sidebar-backdrop');
+            const $body = $('body');
 
-            $('#sidebar-toggle').on('click', () => {
-                $wrapper.toggleClass('sidebar-open');
-                $sidebar.toggleClass('show');
-                $backdrop.toggleClass('show');
-            });
+            const open = () => {
+                $wrapper.addClass('sidebar-open');
+                $sidebar.addClass('show');
+                $backdrop.addClass('show').attr('aria-hidden', 'false');
+                $body.addClass('sidebar-open');
+            };
 
-            $('#sidebar-close, #sidebar-backdrop').on('click', () => {
+            const close = () => {
                 $wrapper.removeClass('sidebar-open');
                 $sidebar.removeClass('show');
-                $backdrop.removeClass('show');
+                $backdrop.removeClass('show').attr('aria-hidden', 'true');
+                $body.removeClass('sidebar-open');
+            };
+
+            const toggle = () => {
+                if ($sidebar.hasClass('show')) {
+                    close();
+                } else {
+                    open();
+                }
+            };
+
+            $('#sidebar-toggle').off('click.nasoSidebar').on('click.nasoSidebar', function (e) {
+                e.preventDefault();
+                toggle();
+            });
+
+            $('#sidebar-close, #sidebar-backdrop').off('click.nasoSidebar').on('click.nasoSidebar', close);
+
+            $(document).off('keydown.nasoSidebar').on('keydown.nasoSidebar', function (e) {
+                if (e.key === 'Escape') {
+                    close();
+                }
             });
         },
     };
@@ -295,7 +319,7 @@
     window.AjaxHelper = AjaxHelper;
 
     $(document).ready(function () {
-        if ($('#admin-wrapper').length) {
+        if ($('#admin-wrapper').length || $('#admin-sidebar').length) {
             AjaxHelper.initSidebar();
         }
 

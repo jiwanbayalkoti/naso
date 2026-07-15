@@ -64,6 +64,26 @@ class RiderController extends Controller
         ])->values());
     }
 
+    public function liveMap(): View
+    {
+        $this->authorize('trackLive', Rider::class);
+
+        return view('riders.live-map', [
+            'pollUrl' => route('riders.live-locations'),
+            'isShop' => auth()->user()->hasRole('shop'),
+        ]);
+    }
+
+    public function liveLocations(): JsonResponse
+    {
+        $this->authorize('trackLive', Rider::class);
+
+        return $this->success([
+            'riders' => $this->riderService->getLiveMapLocations(auth()->user()),
+            'refreshed_at' => now()->toIso8601String(),
+        ]);
+    }
+
     public function datatable(Request $request): JsonResponse
     {
         $this->authorize('viewAny', Rider::class);

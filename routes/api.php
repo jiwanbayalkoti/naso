@@ -84,6 +84,7 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
     Route::apiResource('shops', ShopController::class);
 
     Route::get('riders/datatable', [RiderController::class, 'datatable']);
+    Route::get('riders/live-locations', [RiderController::class, 'liveLocations']);
     Route::get('riders/assignable', [RiderController::class, 'assignable']);
         Route::post('riders/{rider}/toggle-online', [RiderController::class, 'toggleOnline']);
         Route::post('riders/{rider}/heartbeat', [RiderController::class, 'heartbeat']);
