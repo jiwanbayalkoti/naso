@@ -72,6 +72,7 @@
                         name: 'changes_summary',
                         orderable: false,
                         searchable: false,
+                        defaultContent: '—',
                         render(data, type, row) {
                             if (data) {
                                 return (
