@@ -11,7 +11,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DeliveryController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\NotificationController;
-use App\Http\Controllers\RegistrationApprovalController;
+use App\Http\Controllers\RegistrationApprovalController; 
 use App\Http\Controllers\RiderController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\ShopController;
