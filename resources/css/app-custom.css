@@ -625,6 +625,22 @@ div.dataTables_wrapper .dt-buttons .btn {
     align-items: center;
     justify-content: center;
     font-size: 1.75rem;
+    overflow: hidden;
+}
+
+.guest-logo--image {
+    width: 88px;
+    height: 88px;
+    background: transparent;
+    border-radius: 1.1rem;
+    padding: 0;
+}
+
+.guest-logo-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
 }
 
 .guest-title {

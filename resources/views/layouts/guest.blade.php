@@ -1,11 +1,15 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+@php
+    $branding = app(\App\Services\AppSettingService::class)->publicPayload();
+    $brandName = $branding['app_name'] ?? config('app.name', 'NASO');
+@endphp
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="login-url" content="{{ route('login') }}">
-    <title>@yield('title', 'Login - ' . config('app.name', 'Delivery Management'))</title>
+    <title>@yield('title', 'Login - '.$brandName)</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
@@ -27,10 +31,14 @@
     <div class="guest-wrapper">
         <div class="guest-card">
             <div class="guest-brand text-center mb-4">
-                <div class="guest-logo">
-                    <i class="fa-solid fa-truck-fast"></i>
+                <div class="guest-logo {{ !empty($branding['app_logo_url']) ? 'guest-logo--image' : '' }}">
+                    @if(!empty($branding['app_logo_url']))
+                        <img src="{{ $branding['app_logo_url'] }}" alt="{{ $brandName }}" class="guest-logo-image">
+                    @else
+                        <i class="fa-solid fa-truck-fast"></i>
+                    @endif
                 </div>
-                <h1 class="guest-title">{{ config('app.name', 'Delivery Management') }}</h1>
+                <h1 class="guest-title">{{ $brandName }}</h1>
                 <p class="guest-subtitle text-muted mb-0">@yield('subtitle', 'Sign in to your account')</p>
             </div>
 
@@ -38,7 +46,7 @@
         </div>
 
         <p class="guest-footer text-center text-muted">
-            &copy; {{ date('Y') }} {{ config('app.name') }}. All rights reserved.
+            &copy; {{ date('Y') }} {{ $brandName }}. All rights reserved.
         </p>
     </div>
 

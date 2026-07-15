@@ -1,6 +1,6 @@
 @extends('layouts.guest')
 
-@section('title', 'Login - ' . config('app.name'))
+@section('title', 'Login - ' . (app(\App\Services\AppSettingService::class)->get('app_name') ?: config('app.name')))
 @section('subtitle', 'Sign in to your account')
 
 @section('content')
