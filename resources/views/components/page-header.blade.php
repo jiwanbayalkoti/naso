@@ -5,8 +5,8 @@
 ])
 
 <div {{ $attributes->merge(['class' => 'page-header mb-4']) }}>
-    <div class="row align-items-center">
-        <div class="col">
+    <div class="row align-items-center g-2">
+        <div class="col-12 col-md">
             @if(!empty($breadcrumb))
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb mb-2">
@@ -30,8 +30,8 @@
         </div>
 
         @if(isset($actions))
-            <div class="col-auto">
-                <div class="page-header-actions d-flex gap-2 flex-wrap">
+            <div class="col-12 col-md-auto">
+                <div class="page-header-actions d-flex gap-2 flex-wrap justify-content-md-end">
                     {{ $actions }}
                 </div>
             </div>

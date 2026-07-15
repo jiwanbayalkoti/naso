@@ -26,21 +26,31 @@
                 $table.empty();
             }
 
+            const isMobile = window.matchMedia('(max-width: 991.98px)').matches;
+            const useButtons = options.buttons !== false;
+
             const defaults = {
                 processing: true,
                 serverSide: true,
                 responsive: true,
                 autoWidth: false,
-                pageLength: 25,
+                scrollX: isMobile,
+                pageLength: isMobile ? 10 : 25,
                 lengthMenu: [
                     [10, 25, 50, 100, -1],
                     [10, 25, 50, 100, 'All'],
                 ],
-                dom:
-                    "<'row align-items-center mb-3'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
-                    "<'row'<'col-12'tr>>" +
-                    "<'row align-items-center mt-3'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>" +
-                    (options.buttons !== false ? 'B' : ''),
+                dom: isMobile
+                    ? "<'row mb-2'<'col-12'l>>" +
+                      "<'row mb-2'<'col-12'f>>" +
+                      (useButtons ? "<'row mb-2'<'col-12'B>>" : '') +
+                      "<'row'<'col-12'tr>>" +
+                      "<'row mt-2'<'col-12'i>>" +
+                      "<'row mt-1'<'col-12'p>>"
+                    : "<'row align-items-center mb-3'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+                      "<'row'<'col-12'tr>>" +
+                      "<'row align-items-center mt-3'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>" +
+                      (useButtons ? 'B' : ''),
                 buttons: this.buildButtons(options.exportButtons || this.defaultButtons),
                 language: {
                     processing:
