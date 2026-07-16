@@ -471,9 +471,13 @@
                         $('#delivery_fee').val(data.delivery_fee);
                     }
                     if (data.distance_km != null) {
-                        $('#fee-distance-hint').text(
-                            data.distance_km + ' km · fee Rs ' + data.delivery_fee
-                        );
+                        let hint = data.distance_km + ' km · fee Rs ' + data.delivery_fee;
+                        if (data.pricing_zone && data.pricing_zone !== 'linear' && data.pricing_zone !== 'unknown') {
+                            const zoneLabel = data.pricing_zone === 'inside_valley' ? 'Inside Valley' : 'Outside Valley';
+                            const slabLabel = data.pricing_slab?.label ? ' · ' + data.pricing_slab.label : '';
+                            hint = data.distance_km + ' km · ' + zoneLabel + slabLabel + ' · Rs ' + data.delivery_fee;
+                        }
+                        $('#fee-distance-hint').text(hint);
                     }
                 },
             });

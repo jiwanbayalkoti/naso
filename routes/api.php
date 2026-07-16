@@ -11,6 +11,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DeliveryController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\OfferController;
 use App\Http\Controllers\PayoutController;
 use App\Http\Controllers\PublicMediaController;
 use App\Http\Controllers\RegistrationApprovalController;
@@ -137,4 +138,11 @@ Route::middleware(['auth:sanctum', 'active'])->group(function () {
     Route::get('payouts', [PayoutController::class, 'index']);
     Route::post('payouts', [PayoutController::class, 'store']);
     Route::post('payouts/{payout}/mark-paid', [PayoutController::class, 'markPaid']);
+
+    Route::get('offers/mine', [OfferController::class, 'mine']);
+    Route::get('offers', [OfferController::class, 'index']);
+    Route::post('offers', [OfferController::class, 'store']);
+    Route::get('offers/{offer}', [OfferController::class, 'show']);
+    Route::put('offers/{offer}', [OfferController::class, 'update']);
+    Route::delete('offers/{offer}', [OfferController::class, 'destroy']);
 });

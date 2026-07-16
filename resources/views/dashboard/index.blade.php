@@ -6,26 +6,43 @@
 @section('content')
     @php
         $isRiderDashboard = auth()->user()->hasRole('rider');
+        $isShopDashboard = auth()->user()->hasRole('shop');
+        $isAdminDashboard = auth()->user()->hasRole('super_admin');
         $dashboardStats = $isRiderDashboard
             ? [
+                ['key' => 'my_earning', 'label' => 'My Earning', 'icon' => 'fa-coins', 'color' => 'success', 'money' => true],
                 ['key' => 'assigned_deliveries', 'label' => 'Awaiting Accept', 'icon' => 'fa-bell', 'color' => 'warning'],
                 ['key' => 'active_deliveries', 'label' => 'Active', 'icon' => 'fa-route', 'color' => 'info'],
-                ['key' => 'completed_deliveries', 'label' => 'Completed', 'icon' => 'fa-circle-check', 'color' => 'success'],
-                ['key' => 'total_deliveries', 'label' => 'My Deliveries', 'icon' => 'fa-box', 'color' => 'primary'],
+                ['key' => 'completed_deliveries', 'label' => 'Completed', 'icon' => 'fa-circle-check', 'color' => 'primary'],
             ]
-            : [
-                ['key' => 'total_deliveries', 'label' => 'Total Deliveries', 'icon' => 'fa-box', 'color' => 'primary'],
-                ['key' => 'pending_deliveries', 'label' => 'Pending', 'icon' => 'fa-clock', 'color' => 'warning'],
-                ['key' => 'completed_deliveries', 'label' => 'Completed', 'icon' => 'fa-circle-check', 'color' => 'success'],
-                ['key' => 'online_riders', 'label' => 'Online Riders', 'icon' => 'fa-motorcycle', 'color' => 'info'],
-            ];
+            : ($isShopDashboard
+                ? [
+                    ['key' => 'my_earning', 'label' => 'My Balance', 'icon' => 'fa-wallet', 'color' => 'success', 'money' => true],
+                    ['key' => 'total_deliveries', 'label' => 'Total Deliveries', 'icon' => 'fa-box', 'color' => 'primary'],
+                    ['key' => 'pending_deliveries', 'label' => 'Pending', 'icon' => 'fa-clock', 'color' => 'warning'],
+                    ['key' => 'completed_deliveries', 'label' => 'Completed', 'icon' => 'fa-circle-check', 'color' => 'info'],
+                ]
+                : [
+                    ['key' => 'my_earning', 'label' => 'My Earning', 'icon' => 'fa-coins', 'color' => 'success', 'money' => true],
+                    ['key' => 'total_deliveries', 'label' => 'Total Deliveries', 'icon' => 'fa-box', 'color' => 'primary'],
+                    ['key' => 'pending_deliveries', 'label' => 'Pending', 'icon' => 'fa-clock', 'color' => 'warning'],
+                    ['key' => 'completed_deliveries', 'label' => 'Completed', 'icon' => 'fa-circle-check', 'color' => 'info'],
+                    ['key' => 'online_riders', 'label' => 'Online Riders', 'icon' => 'fa-motorcycle', 'color' => 'primary'],
+                    ['key' => 'pending_payout_total', 'label' => 'Pending Payouts', 'icon' => 'fa-hourglass-half', 'color' => 'warning', 'money' => true],
+                    ['key' => 'paid_payout_total', 'label' => 'Paid Out', 'icon' => 'fa-money-bill-transfer', 'color' => 'success', 'money' => true],
+                ]);
     @endphp
 
-    <div id="dashboard-page" @if($isRiderDashboard) data-rider-dashboard="1" @endif>
+    <div id="dashboard-page"
+         @if($isRiderDashboard) data-rider-dashboard="1" @endif
+         data-payment-history-url="{{ route('payouts.index') }}">
         <div class="row g-4 mb-4" id="dashboard-stats" data-url="{{ route('api.dashboard.stats') }}">
             @foreach($dashboardStats as $stat)
                 <div class="col-sm-6 col-xl-3">
-                    <div class="stat-card stat-card-{{ $stat['color'] }}" data-stat="{{ $stat['key'] }}">
+                    <div class="stat-card stat-card-{{ $stat['color'] }} {{ ($stat['key'] ?? '') === 'my_earning' ? 'stat-card-clickable' : '' }}"
+                         data-stat="{{ $stat['key'] }}"
+                         @if(!empty($stat['money'])) data-money="1" @endif
+                         @if(($stat['key'] ?? '') === 'my_earning') data-href="{{ route('payouts.index') }}" role="button" tabindex="0" @endif>
                         <div class="stat-card-loading">
                             <div class="placeholder-glow">
                                 <span class="placeholder col-6"></span>
@@ -44,6 +61,24 @@
                     </div>
                 </div>
             @endforeach
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <div>
+                    <h5 class="mb-1">Payment History</h5>
+                    <p class="text-muted small mb-0">
+                        @if($isAdminDashboard)
+                            All shop/rider payout requests and transfers.
+                        @else
+                            Your payout requests and paid transfers.
+                        @endif
+                    </p>
+                </div>
+                <a href="{{ route('payouts.index') }}" class="btn btn-outline-primary">
+                    <i class="fa-solid fa-receipt me-1"></i> View payment history
+                </a>
+            </div>
         </div>
 
         <div class="row g-4 mb-4">
@@ -168,5 +203,5 @@
 @endpush
 
 @push('scripts')
-    <script src="{{ asset('js/dashboard/index.js') }}"></script>
+    <script src="{{ asset('js/dashboard/index.js') }}?v=20260716-earning"></script>
 @endpush

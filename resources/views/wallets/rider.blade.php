@@ -38,28 +38,19 @@
         </div>
     </div>
 
-    @if(auth()->user()->hasRole('super_admin'))
-        <div class="card mb-4">
-            <div class="card-body">
-                <form id="rider-payout-form" class="row g-2 align-items-end">
-                    <input type="hidden" name="type" value="rider">
-                    <input type="hidden" name="uuid" value="{{ $rider->uuid }}">
-                    <div class="col-md-3">
-                        <label class="form-label">Payout amount</label>
-                        <input type="number" step="0.01" min="0.01" max="{{ (float) $rider->balance }}" name="amount" class="form-control" required>
-                    </div>
-                    <div class="col-md-5">
-                        <label class="form-label">Note</label>
-                        <input type="text" name="note" class="form-control" placeholder="Bank transfer note">
-                    </div>
-                    <div class="col-md-4">
-                        <button type="submit" class="btn btn-primary">Create payout request</button>
-                        <a href="{{ route('payouts.index') }}" class="btn btn-outline-secondary">All payouts</a>
-                    </div>
-                </form>
-            </div>
-        </div>
-    @endif
+    @include('wallets.partials.offers', ['offers' => $offers ?? []])
+
+    @include('wallets.partials.pending-payouts', [
+        'pendingPayouts' => $pendingPayouts ?? collect(),
+        'focusPayoutUuid' => $focusPayoutUuid ?? null,
+    ])
+
+    @include('wallets.partials.request-payout-form', [
+        'type' => 'rider',
+        'uuid' => $rider->uuid,
+        'balance' => (float) $rider->balance,
+        'available' => (float) ($availableForPayout ?? $rider->balance),
+    ])
 
     <div class="card">
         <div class="card-header"><h5 class="mb-0">Recent earnings</h5></div>
@@ -96,16 +87,16 @@
 
 @push('scripts')
 <script>
-(function ($, AjaxHelper) {
-    $('#rider-payout-form').on('submit', function (e) {
-        e.preventDefault();
-        AjaxHelper.post(@json(route('payouts.store')), $(this).serialize(), {
-            success: function (res) {
-                NotificationHelper.success(res.message || 'Payout created');
-                window.location.href = @json(route('payouts.index'));
-            }
-        });
+(function () {
+    $(document).on('click', '.btn-mark-paid', function () {
+        window.location.href = @json(route('payouts.index'));
     });
-}(window.jQuery, window.AjaxHelper));
+
+    const focusId = @json($focusPayoutUuid ?? null);
+    if (focusId) {
+        const el = document.getElementById('payout-' + focusId);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+}());
 </script>
 @endpush

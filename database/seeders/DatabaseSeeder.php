@@ -2,9 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -15,16 +13,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call(RolePermissionSeeder::class);
         $this->call(MenuSeeder::class);
-
-        $admin = User::firstOrCreate(
-            ['email' => 'admin@naso.com'],
-            [
-                'name' => 'Super Admin',
-                'phone' => '9800000000',
-                'password' => Hash::make('password'),
-                'is_active' => true,
-            ]
-        );
-        $admin->assignRole('super_admin');
+        $this->call(OfferSeeder::class);
+        $this->call(DemoUsersSeeder::class);
     }
 }

@@ -13,7 +13,8 @@ use Illuminate\Validation\ValidationException;
 class WalletService extends BaseService
 {
     public function __construct(
-        protected DeliveryFeeCalculatorService $feeCalculator
+        protected DeliveryFeeCalculatorService $feeCalculator,
+        protected OfferEngine $offerEngine
     ) {}
 
     /**
@@ -32,11 +33,32 @@ class WalletService extends BaseService
             }
 
             $rates = $this->feeCalculator->rates();
-            $fee = (float) ($delivery->delivery_fee ?? 0);
+            $shopFee = (float) ($delivery->delivery_fee ?? 0);
+            // Rider pay uses pre-offer fee so free/promo deliveries still compensate riders.
+            $feeForRider = (float) ($delivery->base_delivery_fee ?? $delivery->delivery_fee ?? 0);
             $cod = (float) ($delivery->cod_amount ?? 0);
-            $commissionPercent = max(0, min(100, $rates['commission_percent']));
-            $commission = round($fee * ($commissionPercent / 100), 2);
-            $riderEarning = round(max(0, $fee - $commission), 2);
+
+            $rider = $delivery->rider_id
+                ? Rider::query()->lockForUpdate()->find($delivery->rider_id)
+                : null;
+
+            $commissionResolved = $this->offerEngine->resolveRiderCommission(
+                $rider,
+                (float) $rates['commission_percent'],
+                $delivery
+            );
+            $commissionPercent = $commissionResolved['commission_percent'];
+            $commission = round($feeForRider * ($commissionPercent / 100), 2);
+            $riderEarning = round(max(0, $feeForRider - $commission), 2);
+
+            $appliedIds = array_values(array_unique(array_filter(array_merge(
+                $delivery->applied_offer_ids ?? [],
+                $commissionResolved['applied_offer_ids'] ?? []
+            ))));
+            $notes = array_filter([
+                $delivery->offer_notes,
+                $commissionResolved['offer_notes'] ?? null,
+            ]);
 
             if ($delivery->shop_id) {
                 $shop = Shop::query()->lockForUpdate()->find($delivery->shop_id);
@@ -53,10 +75,10 @@ class WalletService extends BaseService
                         $delivery->cod_collected_at = now();
                     }
 
-                    if ($fee > 0) {
+                    if ($shopFee > 0) {
                         $this->debitShop(
                             $shop,
-                            $fee,
+                            $shopFee,
                             WalletTransactionType::FEE_DEBIT,
                             $delivery,
                             $actorId,
@@ -66,25 +88,26 @@ class WalletService extends BaseService
                 }
             }
 
-            if ($delivery->rider_id && $riderEarning > 0) {
-                $rider = Rider::query()->lockForUpdate()->find($delivery->rider_id);
-                if ($rider) {
-                    $this->creditRider(
-                        $rider,
-                        $riderEarning,
-                        WalletTransactionType::RIDE_EARNING,
-                        $delivery,
-                        $actorId,
-                        'Ride earning for '.$delivery->tracking_number
-                        .' (fee '.$fee.', commission '.$commission.')'
-                    );
-                }
+            if ($rider && $riderEarning > 0) {
+                $this->creditRider(
+                    $rider,
+                    $riderEarning,
+                    WalletTransactionType::RIDE_EARNING,
+                    $delivery,
+                    $actorId,
+                    'Ride earning for '.$delivery->tracking_number
+                    .' (base fee '.$feeForRider.', commission '.$commission.' @ '.$commissionPercent.'%)'
+                );
             }
 
             $delivery->rider_earning = $riderEarning;
             $delivery->platform_commission = $commission;
+            $delivery->applied_offer_ids = $appliedIds;
+            $delivery->offer_notes = $notes !== [] ? implode(' | ', $notes) : $delivery->offer_notes;
             $delivery->settled_at = now();
             $delivery->save();
+
+            $this->offerEngine->applyPostSettleRewards($delivery, $appliedIds, $actorId);
 
             return $delivery->fresh(['shop', 'rider.user']);
         });
@@ -179,6 +202,28 @@ class WalletService extends BaseService
     }
 
     /**
+     * Balance minus amounts already locked in pending payout requests.
+     *
+     * @param  Shop|Rider  $payable
+     */
+    public function availableForPayout($payable, ?int $excludePayoutId = null): float
+    {
+        $balance = (float) ($payable->balance ?? 0);
+        $pendingQuery = Payout::query()
+            ->where('payable_type', $payable::class)
+            ->where('payable_id', $payable->id)
+            ->where('status', Payout::STATUS_PENDING);
+
+        if ($excludePayoutId) {
+            $pendingQuery->where('id', '!=', $excludePayoutId);
+        }
+
+        $pending = (float) $pendingQuery->sum('amount');
+
+        return round(max(0, $balance - $pending), 2);
+    }
+
+    /**
      * @param  Shop|Rider  $payable
      */
     public function createPayout(
@@ -192,10 +237,10 @@ class WalletService extends BaseService
             throw ValidationException::withMessages(['amount' => ['Payout amount must be greater than zero.']]);
         }
 
-        $balance = (float) ($payable->balance ?? 0);
-        if ($amount > $balance) {
+        $available = $this->availableForPayout($payable);
+        if ($amount > $available) {
             throw ValidationException::withMessages([
-                'amount' => ['Payout cannot exceed available balance ('.$balance.').'],
+                'amount' => ['Payout cannot exceed available amount (Rs '.$available.'). Pending requests already reserved part of your balance.'],
             ]);
         }
 
@@ -209,16 +254,38 @@ class WalletService extends BaseService
         ]);
     }
 
-    public function markPayoutPaid(Payout $payout, ?int $processedBy = null, ?string $reference = null): Payout
-    {
+    /**
+     * Mark a payout paid. Pass a smaller $paidAmount for partial payment;
+     * remainder stays as a new pending request.
+     *
+     * @return array{paid: Payout, remainder: ?Payout, was_partial: bool}
+     */
+    public function markPayoutPaid(
+        Payout $payout,
+        ?int $processedBy = null,
+        ?string $reference = null,
+        ?float $paidAmount = null
+    ): array {
         if ($payout->status === Payout::STATUS_PAID) {
-            return $payout;
+            return ['paid' => $payout, 'remainder' => null, 'was_partial' => false];
         }
 
-        return $this->transaction(function () use ($payout, $processedBy, $reference) {
+        return $this->transaction(function () use ($payout, $processedBy, $reference, $paidAmount) {
             $payout = Payout::query()->lockForUpdate()->findOrFail($payout->id);
             if ($payout->status === Payout::STATUS_PAID) {
-                return $payout;
+                return ['paid' => $payout, 'remainder' => null, 'was_partial' => false];
+            }
+
+            $requested = round((float) $payout->amount, 2);
+            $toPay = $paidAmount !== null ? round($paidAmount, 2) : $requested;
+
+            if ($toPay <= 0) {
+                throw ValidationException::withMessages(['amount' => ['Payment amount must be greater than zero.']]);
+            }
+            if ($toPay > $requested) {
+                throw ValidationException::withMessages([
+                    'amount' => ['Payment amount cannot exceed requested amount (Rs '.$requested.').'],
+                ]);
             }
 
             $payable = $payout->payable;
@@ -228,12 +295,12 @@ class WalletService extends BaseService
 
             if ($payable instanceof Shop) {
                 $shop = Shop::query()->lockForUpdate()->findOrFail($payable->id);
-                if ((float) $payout->amount > (float) $shop->balance) {
+                if ($toPay > (float) $shop->balance) {
                     throw ValidationException::withMessages(['amount' => ['Insufficient shop balance.']]);
                 }
                 $this->debitShop(
                     $shop,
-                    (float) $payout->amount,
+                    $toPay,
                     WalletTransactionType::PAYOUT_DEBIT,
                     null,
                     $processedBy,
@@ -241,12 +308,12 @@ class WalletService extends BaseService
                 );
             } elseif ($payable instanceof Rider) {
                 $rider = Rider::query()->lockForUpdate()->findOrFail($payable->id);
-                if ((float) $payout->amount > (float) $rider->balance) {
+                if ($toPay > (float) $rider->balance) {
                     throw ValidationException::withMessages(['amount' => ['Insufficient rider balance.']]);
                 }
                 $this->debitRider(
                     $rider,
-                    (float) $payout->amount,
+                    $toPay,
                     WalletTransactionType::PAYOUT_DEBIT,
                     null,
                     $processedBy,
@@ -254,15 +321,38 @@ class WalletService extends BaseService
                 );
             }
 
+            $wasPartial = $toPay < $requested;
+            $remainderAmount = $wasPartial ? round($requested - $toPay, 2) : 0.0;
+            $remainder = null;
+
+            $payout->amount = $toPay;
             $payout->status = Payout::STATUS_PAID;
             $payout->paid_at = now();
             $payout->processed_by = $processedBy;
             if ($reference) {
                 $payout->reference = $reference;
             }
+            if ($wasPartial) {
+                $payout->note = trim(($payout->note ? $payout->note.' · ' : '').'Partial payment');
+            }
             $payout->save();
 
-            return $payout->fresh(['payable', 'processedBy', 'requestedBy']);
+            if ($wasPartial && $remainderAmount > 0) {
+                $remainder = Payout::create([
+                    'payable_type' => $payout->payable_type,
+                    'payable_id' => $payout->payable_id,
+                    'amount' => $remainderAmount,
+                    'status' => Payout::STATUS_PENDING,
+                    'note' => 'Remainder after partial payment of '.$payout->uuid,
+                    'requested_by' => $payout->requested_by,
+                ]);
+            }
+
+            return [
+                'paid' => $payout->fresh(['payable.user', 'processedBy', 'requestedBy']),
+                'remainder' => $remainder,
+                'was_partial' => $wasPartial,
+            ];
         });
     }
 }

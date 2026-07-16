@@ -179,4 +179,9 @@ class Rider extends Model
     {
         return $this->morphMany(VerificationDocument::class, 'documentable');
     }
+
+    public function payouts(): MorphMany
+    {
+        return $this->morphMany(Payout::class, 'payable');
+    }
 }

@@ -15,4 +15,6 @@ final class WalletTransactionType
     public const PAYOUT_DEBIT = 'payout_debit';
 
     public const ADJUSTMENT = 'adjustment';
+
+    public const OFFER_BONUS = 'offer_bonus';
 }

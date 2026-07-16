@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\ShopResource;
+use App\Models\Payout;
 use App\Models\Rider;
 use App\Models\Shop;
 use App\Models\WalletTransaction;
 use App\Services\DeliveryFeeCalculatorService;
+use App\Services\OfferEngine;
 use App\Services\WalletService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -16,7 +18,8 @@ class WalletController extends Controller
 {
     public function __construct(
         protected WalletService $walletService,
-        protected DeliveryFeeCalculatorService $feeCalculator
+        protected DeliveryFeeCalculatorService $feeCalculator,
+        protected OfferEngine $offerEngine
     ) {}
 
     public function estimateFee(Request $request): JsonResponse
@@ -29,6 +32,7 @@ class WalletController extends Controller
             'pickup_longitude' => ['nullable', 'numeric'],
             'latitude' => ['nullable', 'numeric'],
             'longitude' => ['nullable', 'numeric'],
+            'cod_amount' => ['nullable', 'numeric', 'min:0'],
         ]);
 
         $shop = null;
@@ -46,7 +50,8 @@ class WalletController extends Controller
             dropLng: isset($data['longitude']) ? (float) $data['longitude'] : null,
             pickupAddress: $data['pickup_address'] ?? null,
             dropAddress: $data['delivery_address'] ?? null,
-            shop: $shop
+            shop: $shop,
+            codAmount: isset($data['cod_amount']) ? (float) $data['cod_amount'] : null
         );
 
         return $this->success($estimate);
@@ -63,16 +68,22 @@ class WalletController extends Controller
             ->limit(100)
             ->get();
 
+        $offerProgress = $this->offerEngine->progressForShop($shopModel);
+
+        $available = $this->walletService->availableForPayout($shopModel);
+
         if ($request->is('api/*') || $request->wantsJson()) {
             return $this->success([
                 'shop' => [
                     'uuid' => $shopModel->uuid,
                     'name' => $shopModel->name,
                     'balance' => (float) $shopModel->balance,
+                    'available_for_payout' => $available,
                     'bank_name' => $shopModel->bank_name,
                     'bank_account_name' => $shopModel->bank_account_name,
                     'bank_account_number' => $shopModel->bank_account_number,
                 ],
+                'offers' => $offerProgress,
                 'transactions' => $transactions->map(fn (WalletTransaction $t) => [
                     'uuid' => $t->uuid,
                     'type' => $t->type,
@@ -84,9 +95,19 @@ class WalletController extends Controller
             ]);
         }
 
+        $pendingPayouts = $shopModel->payouts()
+            ->where('status', Payout::STATUS_PENDING)
+            ->latest()
+            ->limit(10)
+            ->get();
+
         return view('wallets.shop', [
             'shop' => $shopModel,
             'transactions' => $transactions,
+            'offers' => $offerProgress,
+            'pendingPayouts' => $pendingPayouts,
+            'focusPayoutUuid' => $request->query('payout'),
+            'availableForPayout' => $available,
         ]);
     }
 
@@ -101,17 +122,23 @@ class WalletController extends Controller
             ->limit(100)
             ->get();
 
+        $offerProgress = $this->offerEngine->progressForRider($riderModel);
+
+        $available = $this->walletService->availableForPayout($riderModel);
+
         if ($request->is('api/*') || $request->wantsJson()) {
             return $this->success([
                 'rider' => [
                     'uuid' => $riderModel->uuid,
                     'name' => $riderModel->user?->name,
                     'balance' => (float) $riderModel->balance,
+                    'available_for_payout' => $available,
                     'total_deliveries' => (int) $riderModel->total_deliveries,
                     'bank_name' => $riderModel->bank_name,
                     'bank_account_name' => $riderModel->bank_account_name,
                     'bank_account_number' => $riderModel->bank_account_number,
                 ],
+                'offers' => $offerProgress,
                 'transactions' => $transactions->map(fn (WalletTransaction $t) => [
                     'uuid' => $t->uuid,
                     'type' => $t->type,
@@ -123,9 +150,19 @@ class WalletController extends Controller
             ]);
         }
 
+        $pendingPayouts = $riderModel->payouts()
+            ->where('status', Payout::STATUS_PENDING)
+            ->latest()
+            ->limit(10)
+            ->get();
+
         return view('wallets.rider', [
             'rider' => $riderModel->load('user'),
             'transactions' => $transactions,
+            'offers' => $offerProgress,
+            'pendingPayouts' => $pendingPayouts,
+            'focusPayoutUuid' => $request->query('payout'),
+            'availableForPayout' => $available,
         ]);
     }
 

@@ -209,7 +209,7 @@
     <script src="{{ asset('js/core/datatable-helper.js') }}?v=20260715-hscroll2"></script>
     <script src="{{ asset('js/core/form-helper.js') }}?v=20260715-hscroll2"></script>
     <script src="{{ asset('js/core/realtime-helper.js') }}?v=20260715-hscroll2"></script>
-    <script src="{{ asset('js/core/app-notifications.js') }}?v=20260715-hscroll2"></script>
+    <script src="{{ asset('js/core/app-notifications.js') }}?v=20260716-payout"></script>
     @if(auth()->user()->hasRole('rider'))
         <script src="{{ asset('js/core/rider-delivery-offers.js') }}"></script>
         <script src="{{ asset('js/core/rider-location-sender.js') }}"></script>

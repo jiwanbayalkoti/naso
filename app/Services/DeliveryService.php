@@ -65,14 +65,22 @@ class DeliveryService extends BaseService
                 dropLng: isset($data['longitude']) ? (float) $data['longitude'] : null,
                 pickupAddress: $data['pickup_address'] ?? null,
                 dropAddress: $data['delivery_address'] ?? null,
-                shop: $shop
+                shop: $shop,
+                codAmount: isset($data['cod_amount']) ? (float) $data['cod_amount'] : null
             );
 
             $data['distance_km'] = $estimate['distance_km'];
-            // Auto fee from distance; super_admin may override explicitly.
+            $data['base_delivery_fee'] = $estimate['base_delivery_fee'];
+            $data['applied_offer_ids'] = $estimate['applied_offer_ids'] ?? [];
+            $data['offer_notes'] = $estimate['offer_notes'] ?? null;
+
+            // Auto fee from distance (+ offers); super_admin may override charged fee.
             $user = $userId ? \App\Models\User::query()->find($userId) : null;
             if (! ($user?->hasRole('super_admin') && array_key_exists('delivery_fee', $data) && $data['delivery_fee'] !== null && $data['delivery_fee'] !== '')) {
                 $data['delivery_fee'] = $estimate['delivery_fee'];
+            } else {
+                // Keep base for rider pay when admin overrides charged fee.
+                $data['base_delivery_fee'] = $data['base_delivery_fee'] ?? (float) $data['delivery_fee'];
             }
             $data['cod_amount'] = (float) ($data['cod_amount'] ?? 0);
             if (($data['payment_method'] ?? null) === 'cod' || $data['cod_amount'] > 0) {

@@ -8,6 +8,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DeliveryController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\OfferController;
 use App\Http\Controllers\PayoutController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicMediaController;
@@ -160,5 +161,14 @@ Route::middleware(['auth', 'active'])->group(function () {
         Route::get('/', [PayoutController::class, 'index'])->name('index');
         Route::post('/', [PayoutController::class, 'store'])->name('store');
         Route::post('{payout}/mark-paid', [PayoutController::class, 'markPaid'])->name('mark-paid');
+    });
+
+    Route::get('offers/mine', [OfferController::class, 'mine'])->name('offers.mine');
+    Route::prefix('offers')->name('offers.')->group(function () {
+        Route::get('/', [OfferController::class, 'index'])->name('index');
+        Route::post('/', [OfferController::class, 'store'])->name('store');
+        Route::get('{offer}', [OfferController::class, 'show'])->name('show');
+        Route::put('{offer}', [OfferController::class, 'update'])->name('update');
+        Route::delete('{offer}', [OfferController::class, 'destroy'])->name('destroy');
     });
 });

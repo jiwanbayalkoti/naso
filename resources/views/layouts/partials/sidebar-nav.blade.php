@@ -40,6 +40,11 @@
     @endif
 
     @if(auth()->user()->hasRole('super_admin'))
+        <a href="{{ route('offers.index') }}"
+           class="sidebar-link {{ request()->routeIs('offers.*') ? 'active' : '' }}">
+            <i class="fa-solid fa-tags"></i>
+            <span>Offers</span>
+        </a>
         <a href="{{ route('payouts.index') }}"
            class="sidebar-link {{ request()->routeIs('payouts.*') ? 'active' : '' }}">
             <i class="fa-solid fa-money-bill-transfer"></i>

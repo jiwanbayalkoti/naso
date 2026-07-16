@@ -75,10 +75,16 @@
                         const key = $card.data('stat');
                         const value = stats[key] ?? stats[key + '_count'] ?? 0;
                         const trend = stats[key + '_trend'] || stats.trends?.[key];
+                        const isMoney = $card.data('money') === 1 || $card.attr('data-money') === '1';
 
-                        $card.find('[data-value]').text(
-                            typeof value === 'number' ? value.toLocaleString() : value
-                        );
+                        let display = value;
+                        if (typeof value === 'number') {
+                            display = isMoney
+                                ? 'Rs ' + value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                                : value.toLocaleString();
+                        }
+
+                        $card.find('[data-value]').text(display);
 
                         if (trend !== undefined && trend !== null) {
                             const $trend = $card.find('[data-trend]');
@@ -97,6 +103,13 @@
 
                         $card.find('.stat-card-loading').addClass('d-none');
                         $card.find('.stat-card-content').removeClass('d-none');
+                    });
+
+                    $container.find('[data-href]').off('click.dashboardEarning').on('click.dashboardEarning', function () {
+                        const href = $(this).data('href');
+                        if (href) {
+                            window.location.href = href;
+                        }
                     });
                 })
                 .fail(() => {

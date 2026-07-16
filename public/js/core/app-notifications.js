@@ -137,8 +137,16 @@
 
                 this.seenNotificationIds.add(item.id);
 
-                if (window.NotificationHelper && item.type === 'delivery_completed') {
+                if (!window.NotificationHelper) {
+                    return;
+                }
+
+                if (item.type === 'delivery_completed') {
                     window.NotificationHelper.success(item.message, 'Delivery Completed');
+                } else if (item.type === 'payout_requested') {
+                    window.NotificationHelper.info(item.message, 'Payout Request');
+                } else if (item.type === 'payout_paid') {
+                    window.NotificationHelper.success(item.message, 'Payout Paid');
                 }
             });
         },
@@ -154,9 +162,14 @@
             const html = items.map((item) => {
                 const isUnread = !item.read_at;
                 const time = item.created_at ? new Date(item.created_at).toLocaleString() : '';
-                const icon = item.type === 'delivery_completed'
-                    ? 'fa-circle-check text-success'
-                    : 'fa-bell text-primary';
+                let icon = 'fa-bell text-primary';
+                if (item.type === 'delivery_completed') {
+                    icon = 'fa-circle-check text-success';
+                } else if (item.type === 'payout_requested') {
+                    icon = 'fa-building-columns text-warning';
+                } else if (item.type === 'payout_paid') {
+                    icon = 'fa-money-bill-transfer text-success';
+                }
 
                 return (
                     '<a href="#" class="notification-item' + (isUnread ? ' is-unread' : '') + '"' +

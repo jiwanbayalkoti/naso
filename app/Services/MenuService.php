@@ -68,6 +68,9 @@ class MenuService extends BaseService
                     'audit-logs.',
                     'profile.',
                     'settings.',
+                    'payouts.',
+                    'wallet.',
+                    'offers.',
                 ];
 
                 foreach ($allowed as $prefix) {
@@ -156,6 +159,16 @@ class MenuService extends BaseService
 
     protected function userCanSeeMenu(User $user, Menu $menu): bool
     {
+        $user->loadMissing('roles');
+
+        // Role-specific wallet shortcuts (permission is null so all would otherwise see them).
+        if ($menu->route_name === 'wallet.shop') {
+            return $user->hasRole('shop');
+        }
+        if ($menu->route_name === 'wallet.rider') {
+            return $user->hasRole('rider');
+        }
+
         if (! $menu->permission) {
             return true;
         }
