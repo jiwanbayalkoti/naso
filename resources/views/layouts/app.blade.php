@@ -16,7 +16,7 @@
     <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
-    <link href="{{ asset('css/app-custom.css') }}?v=20260715-hscroll2" rel="stylesheet">
+    <link href="{{ asset('css/app-custom.css') }}?v=20260717-modal1" rel="stylesheet">
 
     @stack('styles')
 </head>
